@@ -1,0 +1,54 @@
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local glideButton = Instance.new("TextButton")
+glideButton.Size = UDim2.new(0, 200, 0, 50)
+glideButton.Position = UDim2.new(1, -210, 0.5, -25)
+glideButton.Text = "Glide"
+glideButton.Parent = screenGui
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://10797692883"
+
+local isGliding = false
+local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+local animator = humanoid:FindFirstChild("Animator") or humanoid:WaitForChild("Animator")
+local animationTrack
+local glideForce
+
+glideButton.MouseButton1Click:Connect(function()
+    if humanoid.FloorMaterial ~= Enum.Material.Air then
+        return
+    end
+
+    if not animationTrack then
+        animationTrack = animator:LoadAnimation(animation)
+    end
+
+    if not isGliding then
+        isGliding = true
+        animationTrack:Play()
+        glideForce = Instance.new("BodyVelocity")
+        glideForce.MaxForce = Vector3.new(0, 10000, 0)
+        glideForce.Velocity = Vector3.new(0, -10, 0)
+        glideForce.Parent = humanoid.Parent:FindFirstChild("HumanoidRootPart")
+    else
+        isGliding = false
+        animationTrack:Stop()
+        if glideForce then
+            glideForce:Destroy()
+            glideForce = nil
+        end
+    end
+end)
+
+humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function()
+    if humanoid.FloorMaterial ~= Enum.Material.Air and isGliding then
+        isGliding = false
+        animationTrack:Stop()
+        if glideForce then
+            glideForce:Destroy()
+            glideForce = nil
+        end
+    end
+end)
